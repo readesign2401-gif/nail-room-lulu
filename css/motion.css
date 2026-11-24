@@ -1,0 +1,58 @@
+/* 動きカタログの共通の土台。部品のCSSより先に読み込む。 */
+
+/* 縦に長くする区画は JS が動くときだけ長くする（JSが無ければ普通の高さ） */
+[data-motion-tall]{position:relative}
+
+/* OSの「視差効果を減らす」。ただし 14 動きとめるボタンで「動かす」を選んだ人（data-motion=on）は動かす */
+@media (prefers-reduced-motion: reduce){
+  html:not([data-motion=on]){scroll-behavior:auto}
+  html.js:not([data-motion=on]) [data-motion-tall]{height:auto!important;min-height:100svh}
+  html:not([data-motion=on]) *,html:not([data-motion=on]) *::before,html:not([data-motion=on]) *::after{animation:none!important;transition:none!important}
+}
+
+/* 14 動きとめるボタンで止めたとき（OSの設定と同じ扱い） */
+html[data-motion=off]{scroll-behavior:auto}
+html.js[data-motion=off] [data-motion-tall]{height:auto!important;min-height:100svh}
+html[data-motion=off] *,html[data-motion=off] *::before,html[data-motion=off] *::after{animation:none!important;transition:none!important}
+/* 01 くるくる回転木馬 */
+.kurukuru{--kurukuru-h:min(52svh,440px)}
+.js .kurukuru{height:calc(var(--n,4) * 170svh + 100svh)}
+.kurukuru-stage{position:sticky;top:0;height:100svh;min-height:520px;overflow:clip;background:var(--kurukuru-bg,#eee)}
+.kurukuru-words{position:absolute;inset:0;pointer-events:none}
+.kurukuru-word{position:absolute;left:50%;top:14%;margin:0;font-size:clamp(80px,19vw,320px);font-weight:800;line-height:1;letter-spacing:-.04em;color:#fff;opacity:0;white-space:nowrap}
+.kurukuru-items{position:absolute;left:0;right:0;bottom:8%;height:var(--kurukuru-h);margin:0;padding:0;list-style:none}
+.kurukuru-item{position:absolute;left:50%;bottom:0;transform:translate(-50%,0);transform-origin:50% 100%;will-change:transform,filter}
+/* 主役の画像：高さをそろえ、足元（下端）を基準線に合わせる。縦長・横長が混ざっても崩れない */
+[data-kurukuru-figure]{position:relative;display:block;height:var(--kurukuru-h);width:auto;max-width:min(42vw,440px);object-fit:contain;object-position:50% 100%}
+[data-kurukuru-figure] img{display:block;height:100%;width:auto;max-width:100%;object-fit:contain;object-position:50% 100%}
+[data-kurukuru-figure] [data-pose=b]{position:absolute;inset:0;visibility:hidden}
+.kurukuru-sweep{position:absolute;left:50%;top:50%;width:0;height:0;z-index:150;pointer-events:none}
+.kurukuru-sweep>*{position:absolute;left:0;top:0;width:clamp(110px,16vw,220px);height:auto;opacity:0}
+.kurukuru-caption{position:absolute;left:clamp(16px,4vw,56px);bottom:9%;z-index:200;width:min(330px,34vw)}
+.js .kurukuru-caption{opacity:0}
+.kurukuru-nav{position:absolute;right:clamp(16px,4vw,56px);bottom:9%;z-index:200;display:flex;gap:10px;align-items:center}
+.kurukuru-nav [data-kurukuru-dots]{display:flex;gap:8px}
+.kurukuru-nav [data-kurukuru-dots] button{width:12px;height:12px;padding:0;border-radius:50%;border:2px solid currentColor;background:transparent;cursor:pointer}
+.kurukuru-nav [data-kurukuru-dots] button[aria-pressed=true]{background:currentColor}
+@media (max-width:760px){
+  .kurukuru{--kurukuru-h:min(40svh,360px)}
+  .kurukuru-items{bottom:34%}
+  [data-kurukuru-figure]{max-width:62vw}
+  .kurukuru-caption{left:16px;right:16px;bottom:88px;width:auto}
+  .kurukuru-nav{left:16px;right:16px;bottom:22px;justify-content:center}
+}
+/* 本格段階：静止画・透明合成の canvas・元の動画を同じ場所に重ね、動画が描けたら静止画と入れかえる */
+.scrub-figure{aspect-ratio:var(--scrub-ratio,4/3)}
+.scrub-figure>*{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%}
+.scrub-figure video,.scrub-figure canvas{opacity:0}
+.scrub-figure.video-ready canvas{opacity:1}
+.scrub-figure.video-ready .scrub-poster{opacity:0}
+/* 14 動きとめるボタン */
+[data-motion-toggle]{display:inline-flex;align-items:center;gap:8px;border:2px solid currentColor;border-radius:99px;background:transparent;padding:6px 14px 6px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+[data-motion-toggle] .tomeru-icon{position:relative;width:16px;height:16px;border-radius:50%;background:currentColor}
+/* うごいているとき：一時停止のマーク／とめているとき：再生のマーク */
+[data-motion-toggle] .tomeru-icon::before,[data-motion-toggle] .tomeru-icon::after{content:"";position:absolute;top:4px;width:2px;height:8px;background:var(--tomeru-bg,#fff)}
+[data-motion-toggle] .tomeru-icon::before{left:5px}
+[data-motion-toggle] .tomeru-icon::after{left:9px}
+[data-motion-toggle][aria-pressed=true] .tomeru-icon::before{left:6px;top:4px;width:0;height:0;background:none;border-left:6px solid var(--tomeru-bg,#fff);border-top:4px solid transparent;border-bottom:4px solid transparent}
+[data-motion-toggle][aria-pressed=true] .tomeru-icon::after{display:none}
